@@ -1,130 +1,112 @@
-/**
- * Sample React Native App
- * https://github.com/facebook/react-native
- *
- * @format
- */
+import React, { useState,useEffect } from 'react';
+import { SafeAreaView, StyleSheet, StatusBar, useColorScheme, View } from 'react-native';
+import { createDrawerNavigator } from '@react-navigation/drawer';
+import { NavigationContainer, DefaultTheme } from '@react-navigation/native';
+import IncomeScreen from './layouts/income';
+import OutcomeScreen from './layouts/outcome';
+import CustomDrawerContent from './customdrawer';
+import HomeScreen from './layouts/home';
+import FinancialAnalysisScreen from './layouts/analysis';
+import SplashScreen from './layouts/splashscreen';
 
-import React from 'react';
-import type {PropsWithChildren} from 'react';
-import {
-  ScrollView,
-  StatusBar,
-  StyleSheet,
-  Text,
-  useColorScheme,
-  View,
-} from 'react-native';
+const Drawer = createDrawerNavigator();
 
-import {
-  Colors,
-  DebugInstructions,
-  Header,
-  LearnMoreLinks,
-  ReloadInstructions,
-} from 'react-native/Libraries/NewAppScreen';
+const myTheme = {
+  ...DefaultTheme,
+  colors: {
+    ...DefaultTheme.colors,
+    background: '#1E1E1E',
+    card: '#1E1E1E',
+    text: '#F5F5F5',
+    primary: '#F5F5F5',
+  },
+};
 
-type SectionProps = PropsWithChildren<{
-  title: string;
-}>;
+function MyDrawer() {
+  const [refresh, setRefresh] = useState(false);
 
-function Section({children, title}: SectionProps): React.JSX.Element {
-  const isDarkMode = useColorScheme() === 'dark';
+  const handleRefresh = () => {
+    setRefresh(prev => !prev);
+  };
+
+   const handleGoalChange = () => {
+      handleRefresh();
+    };
+
   return (
-    <View style={styles.sectionContainer}>
-      <Text
-        style={[
-          styles.sectionTitle,
-          {
-            color: isDarkMode ? Colors.white : Colors.black,
-          },
-        ]}>
-        {title}
-      </Text>
-      <Text
-        style={[
-          styles.sectionDescription,
-          {
-            color: isDarkMode ? Colors.light : Colors.dark,
-          },
-        ]}>
-        {children}
-      </Text>
-    </View>
+    <Drawer.Navigator
+      initialRouteName="Home"
+      drawerContent={(props) => <CustomDrawerContent {...props} />}
+      screenOptions={{
+        drawerStyle: {
+          backgroundColor: '#1E1E1E',
+          width: 300,
+          paddingTop: 20,
+        },
+        drawerActiveBackgroundColor: '#2C2C2C',
+        drawerActiveTintColor: '#F5F5F5',
+        drawerInactiveTintColor: '#A9A9A9',
+        drawerLabelStyle: {
+          fontSize: 18,
+          fontWeight: '700',
+          color: '#F5F5F5',
+          marginLeft: 10,
+        },
+        headerStyle: {
+          backgroundColor: '#2C2C2C',
+          elevation: 5,
+        },
+        headerTintColor: '#F5F5F5',
+      }}
+    >
+       <Drawer.Screen name="Home">
+              {() => <HomeScreen refresh={refresh} onRefresh={handleRefresh} onGoalChange={handleGoalChange} />}
+            </Drawer.Screen>
+            <Drawer.Screen name="Income">
+              {() => <IncomeScreen refresh={refresh} onRefresh={handleRefresh} onGoalChange={handleGoalChange} />}
+            </Drawer.Screen>
+      <Drawer.Screen name="Outcome">
+        {() => <OutcomeScreen refresh={refresh} onRefresh={handleRefresh} onGoalChange={handleGoalChange}/>}
+      </Drawer.Screen>
+      <Drawer.Screen name="Financial Analysis">
+        {() => <FinancialAnalysisScreen refresh={refresh} onRefresh={handleRefresh} />}
+      </Drawer.Screen>
+    </Drawer.Navigator>
   );
 }
 
 function App(): React.JSX.Element {
   const isDarkMode = useColorScheme() === 'dark';
-
   const backgroundStyle = {
-    backgroundColor: isDarkMode ? Colors.darker : Colors.lighter,
+    backgroundColor: isDarkMode ? '#121212' : '#FFFFFF',
   };
 
-  /*
-   * To keep the template simple and small we're adding padding to prevent view
-   * from rendering under the System UI.
-   * For bigger apps the reccomendation is to use `react-native-safe-area-context`:
-   * https://github.com/AppAndFlow/react-native-safe-area-context
-   *
-   * You can read more about it here:
-   * https://github.com/react-native-community/discussions-and-proposals/discussions/827
-   */
-  const safePadding = '5%';
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setIsLoading(false);
+    }, 2000);
+
+    return () => clearTimeout(timer);
+  }, []);
 
   return (
-    <View style={backgroundStyle}>
-      <StatusBar
-        barStyle={isDarkMode ? 'light-content' : 'dark-content'}
-        backgroundColor={backgroundStyle.backgroundColor}
-      />
-      <ScrollView
-        style={backgroundStyle}>
-        <View style={{paddingRight: safePadding}}>
-          <Header/>
+    <NavigationContainer theme={myTheme}>
+      <SafeAreaView style={[styles.container, backgroundStyle]}>
+        <StatusBar barStyle={isDarkMode ? 'light-content' : 'dark-content'} />
+        <View style={{ flex: 1 }}>
+          {isLoading ? <SplashScreen /> : <MyDrawer />}
         </View>
-        <View
-          style={{
-            backgroundColor: isDarkMode ? Colors.black : Colors.white,
-            paddingHorizontal: safePadding,
-            paddingBottom: safePadding,
-          }}>
-          <Section title="Step One">
-            Edit <Text style={styles.highlight}>App.tsx</Text> to change this
-            screen and then come back to see your edits.
-          </Section>
-          <Section title="See Your Changes">
-            <ReloadInstructions />
-          </Section>
-          <Section title="Debug">
-            <DebugInstructions />
-          </Section>
-          <Section title="Learn More">
-            Read the docs to discover what to do next:
-          </Section>
-          <LearnMoreLinks />
-        </View>
-      </ScrollView>
-    </View>
+      </SafeAreaView>
+    </NavigationContainer>
   );
 }
 
 const styles = StyleSheet.create({
-  sectionContainer: {
-    marginTop: 32,
-    paddingHorizontal: 24,
-  },
-  sectionTitle: {
-    fontSize: 24,
-    fontWeight: '600',
-  },
-  sectionDescription: {
-    marginTop: 8,
-    fontSize: 18,
-    fontWeight: '400',
-  },
-  highlight: {
-    fontWeight: '700',
+  container: {
+    flex: 1,
+    backgroundColor: '#000000',
   },
 });
 
